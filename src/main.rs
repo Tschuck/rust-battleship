@@ -1,16 +1,11 @@
 mod board;
-mod structures;
 mod config;
+mod game;
+mod structures;
+mod user;
 
-use structures::{Direction};
-use board::Board;
+use game::start_game;
 
 fn main() {
-    let mut boards = [Board::new(), Board::new()];
-
-    boards[0].place_ship(0, 0, 4, Direction::HORIZONTAL);
-    boards[0].place_ship(1, 3, 4, Direction::VERTICAL);
-
-    println!("{}", boards[0]);
-    println!("{}", boards[1]);
+    start_game();
 }
