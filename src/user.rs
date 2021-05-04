@@ -44,7 +44,7 @@ impl User {
     }
 
     pub fn read_user_type() -> UserType {
-        let mut user_type: UserType = UserType::USER;
+        let user_type: UserType;
 
         println!("\n - How should the user act? (0 = manual, 1 = bot)");
         loop {
@@ -143,7 +143,7 @@ impl User {
                     });
                     break;
                 }
-                Err(e) => {
+                Err(_) => {
                     continue;
                 }
             }
@@ -216,7 +216,7 @@ impl User {
             println!("dafuq");
         }
 
-        self.calculateLost();
+        self.calculate_lost();
 
         return Ok(());
     }
@@ -231,16 +231,16 @@ impl User {
                 Ok(_) => {
                     break;
                 }
-                Err(e) => {
+                Err(_) => {
                     continue;
                 }
             }
         }
 
-        self.calculateLost();
+        self.calculate_lost();
     }
 
-    pub fn calculateLost(&mut self) {
+    pub fn calculate_lost(&mut self) {
         for y in 0..self.board.fields.len() {
             for x in 0..self.board.fields[y].len() {
                 if self.board.fields[y][x] == FieldStatus::SHIP {

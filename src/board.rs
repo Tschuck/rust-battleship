@@ -74,30 +74,30 @@ impl Board {
         println!("{}", header);
 
         for y in 0..self.fields.len() {
-            let mut lineLog = String::new();
-            lineLog.push_str(&format!(" |  {}  |", y));
+            let mut line_log = String::new();
+            line_log.push_str(&format!(" |  {}  |", y));
 
             for x in 0..self.fields[y].len() {
-                lineLog.push_str(&format!(" "));
+                line_log.push_str(&format!(" "));
 
                 if self.fields[y][x] == FieldStatus::EMPTY {
-                    lineLog.push_str(&format!("❓"));
+                    line_log.push_str(&format!("❓"));
                 } else if self.fields[y][x] == FieldStatus::FAIL {
-                    lineLog.push_str(&format!("❌"));
+                    line_log.push_str(&format!("❌"));
                 } else if self.fields[y][x] == FieldStatus::HIT {
-                    lineLog.push_str(&format!("💥"));
+                    line_log.push_str(&format!("💥"));
                 } else if self.fields[y][x] == FieldStatus::SHIP {
                     if show_ships {
-                        lineLog.push_str(&format!("🚢"));
+                        line_log.push_str(&format!("🚢"));
                     } else {
-                        lineLog.push_str(&format!("❓"));
+                        line_log.push_str(&format!("❓"));
                     }
                 }
 
-                lineLog.push_str(&format!(" |"));
+                line_log.push_str(&format!(" |"));
             }
 
-            println!("{}", lineLog);
+            println!("{}", line_log);
         }
     }
 }

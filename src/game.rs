@@ -1,5 +1,5 @@
 use crate::{structures::UserType, user::User};
-use std::{any::Any, io};
+use std::{io};
 
 pub struct Game {
     users: Vec<User>,
@@ -51,11 +51,11 @@ impl Game {
 
             println!("Shoot!");
 
-            if (self.users[active_ui].user_type == UserType::USER) {
+            if self.users[active_ui].user_type == UserType::USER {
                 loop {
                     let position = self.users[active_ui].get_x_y_position();
-                    let mut shootResult = self.users[target_ui].shoot(position[0], position[1]);
-                    match shootResult {
+                    let shoot_result = self.users[target_ui].shoot(position[0], position[1]);
+                    match shoot_result {
                         Ok(_) => {
                             break;
                         }
@@ -74,9 +74,9 @@ impl Game {
             }
 
             println!("Press any key to continue!");
-            let mut pressedKey = String::new();
+            let mut pressed_key = String::new();
             io::stdin()
-                .read_line(&mut pressedKey)
+                .read_line(&mut pressed_key)
                 .expect("Failed to readline");
 
             if self.users[target_ui].lost {
