@@ -4,8 +4,9 @@ mod game;
 mod structures;
 mod user;
 
-use game::start_game;
+use game::Game;
 
 fn main() {
-    start_game();
+    let mut game = Game::new();
+    game.start();
 }

@@ -64,15 +64,42 @@ impl Board {
 
         Ok(())
     }
-}
 
-impl fmt::Display for Board {
-    // This trait requires `fmt` with this exact signature.
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for y in 0..self.fields.len() {
-            println!("{:?}", self.fields[y]);
+    pub fn log_board(&self, show_ships: bool) {
+        let mut header = String::new();
+        header.push_str(" |     | ");
+
+        for i in 0..GRID_COUNT {
+            header.push_str(&format!(" {} | ", i));
         }
 
-        Ok(())
+        println!("{}", header);
+
+        for y in 0..self.fields.len() {
+            let mut lineLog = String::new();
+            lineLog.push_str(&format!(" |  {}  |", y));
+
+            for x in 0..self.fields[y].len() {
+                lineLog.push_str(&format!(" "));
+
+                if self.fields[y][x] == FieldStatus::EMPTY {
+                    lineLog.push_str(&format!("❓"));
+                } else if self.fields[y][x] == FieldStatus::FAIL {
+                    lineLog.push_str(&format!("❌"));
+                } else if self.fields[y][x] == FieldStatus::HIT {
+                    lineLog.push_str(&format!("💥"));
+                } else if self.fields[y][x] == FieldStatus::SHIP {
+                    if show_ships {
+                        lineLog.push_str(&format!("🚢"));
+                    } else {
+                        lineLog.push_str(&format!("❓"));
+                    }
+                }
+
+                lineLog.push_str(&format!(" |"));
+            }
+
+            println!("{}", lineLog);
+        }
     }
 }

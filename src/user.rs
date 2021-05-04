@@ -1,19 +1,23 @@
+use std::error::Error;
 use crate::board::Board;
-use crate::config::SHIPS;
-use crate::structures::{Ship, PlacedShip, UserType, Direction};
+use crate::config::{GRID_COUNT,SHIPS};
+use crate::structures::{Ship, PlacedShip, UserType, Direction, FieldStatus};
 use std::io;
+use rand::Rng;
 
 pub struct User {
     pub board: Board,
     pub name: String,
     pub placed_ships: Vec<PlacedShip>,
     pub user_type: UserType,
+    pub lost: bool,
 }
 
 impl User {
     pub fn new() -> User {
         User {
             board: Board::new(),
+            lost: false,
             name: User::read_name(),
             placed_ships: Vec::new(),
             user_type: User::read_user_type(),
@@ -77,9 +81,74 @@ impl User {
         }
     }
 
+    pub fn place_ships_random(&mut self) {
+        println!("\n - Placed ships randomly");
+
+        for i in 0..SHIPS.len() {
+            loop {
+                let ship: &'static Ship = &SHIPS[i];
+                let y = rand::thread_rng().gen_range(0, GRID_COUNT);
+                let x = rand::thread_rng().gen_range(0, GRID_COUNT);
+                let direction = if rand::thread_rng().gen_range(0, 2) == 0 {
+                    Direction::HORIZONTAL
+                } else {
+                    Direction::VERTICAL
+                };
+
+                let result = self.board.place_ship(y, x, ship.length, direction);
+                match result {
+                    Ok(_) => {
+                        self.placed_ships.push(PlacedShip {
+                            ship: &ship,
+                            y,
+                            x,
+                            hits: 0,
+                        });
+                        break;
+                    }
+                    Err(e) => {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        println!("your current field: ");
+        self.board.log_board(true);
+    }
+
+    pub fn get_x_y_position(&self) -> [usize; 2] {
+        let mut position: [usize; 2] = [0, 0];
+
+        for i in 0..2 {
+            loop {
+                if i == 0 {
+                    println!("    ->  Please insert the y position");
+                } else {
+                    println!("    ->  Please insert the x position");
+                }
+
+                let mut position_input = String::new();
+                io::stdin()
+                    .read_line(&mut position_input)
+                    .expect("Failed to readline");
+                position[i] = match position_input.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => {
+                        println!("please insert a number: {}", position_input);
+                        continue;
+                    }
+                };
+
+                break;
+            }
+        }
+
+        return position;
+    }
+
     pub fn place_ship(&mut self, ship: &'static Ship) {
         let mut direction: Direction;
-        let mut position: [usize; 2] = [0, 0];
 
         println!("\n - {} ({} length)", ship.name, ship.length);
 
@@ -103,49 +172,51 @@ impl User {
                 }
             }
 
-            for i in 0..2 {
-                loop {
-                    if i == 0 {
-                        println!("    ->  Please insert the y position");
-                    } else {
-                        println!("    ->  Please insert the x position");
-                    }
-
-                    let mut position_input = String::new();
-                    io::stdin()
-                        .read_line(&mut position_input)
-                        .expect("Failed to readline");
-                    position[i] = match position_input.trim().parse() {
-                        Ok(num) => num,
-                        Err(_) => {
-                            println!("please insert a number: {}", position_input);
-                            continue;
-                        }
-                    };
-
-                    break;
-                }
-            }
+            let position: [usize; 2] = self.get_x_y_position();
 
             let result = self.board.place_ship(position[0], position[1], ship.length, direction);
             match result {
                 Ok(_) => {
                     println!("your current field: ");
-                    println!("{}", self.board);
+                    self.board.log_board(true);
                     self.placed_ships.push(PlacedShip {
                         ship,
                         y: position[0],
                         x: position[1],
+                        hits: 0,
                     });
                     break;
                 }
                 Err(e) => {
                     println!("    ->  {}", e);
                     println!("your current field: ");
-                    println!("{}", self.board);
+                    self.board.log_board(true);
                     continue;
                 }
             }
         }
+    }
+
+    pub fn shoot(&mut self, y: usize, x: usize) -> Result<(), Box<dyn Error>> {
+        if y >= self.board.fields.len() || x >= self.board.fields[y].len() {
+            return Err(Box::from("out of field bounds"));
+        }
+
+        if self.board.fields[y][x] == FieldStatus::HIT {
+            println!("already hit");
+            return Err(Box::from("You already shot at this position?"));
+        }
+
+        if self.board.fields[y][x] == FieldStatus::EMPTY {
+            println!("Awwww nothing...");
+            self.board.fields[y][x] = FieldStatus::FAIL;
+        }
+
+        if self.board.fields[y][x] == FieldStatus::SHIP {
+            println!("You have hit a ship!");
+            self.board.fields[y][x] = FieldStatus::HIT;
+        }
+
+        return Ok(());
     }
 }

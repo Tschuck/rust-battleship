@@ -29,4 +29,5 @@ pub struct PlacedShip {
     pub ship: &'static Ship,
     pub x: usize,
     pub y: usize,
+    pub hits: usize,
 }
