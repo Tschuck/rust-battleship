@@ -65,20 +65,28 @@ impl Board {
 
     pub fn log_board(&self, show_ships: bool) {
         let mut header = String::new();
-        header.push_str(" |     | ");
+        header.push_str(" |      | ");
 
         for i in 0..GRID_COUNT {
-            header.push_str(&format!(" {} | ", i));
+            if i < 10 {
+                header.push_str(&format!("  {} | ", i));
+            } else {
+                header.push_str(&format!(" {} | ", i));
+            }
         }
 
         println!("{}", header);
 
         for y in 0..self.fields.len() {
             let mut line_log = String::new();
-            line_log.push_str(&format!(" |  {}  |", y));
+            if y < 10 {
+                line_log.push_str(&format!(" |   {}  |", y));
+            } else {
+                line_log.push_str(&format!(" |  {}  |", y));
+            }
 
             for x in 0..self.fields[y].len() {
-                line_log.push_str(&format!(" "));
+                line_log.push_str("  ");
 
                 if self.fields[y][x] == FieldStatus::EMPTY {
                     line_log.push_str(&format!("❓"));
