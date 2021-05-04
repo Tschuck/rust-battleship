@@ -40,7 +40,7 @@ impl User {
             }
         }
 
-        return user_name;
+        return user_name.trim().to_string();
     }
 
     pub fn read_user_type() -> UserType {
@@ -85,32 +85,7 @@ impl User {
         println!("\n - Placed ships randomly");
 
         for i in 0..SHIPS.len() {
-            loop {
-                let ship: &'static Ship = &SHIPS[i];
-                let y = rand::thread_rng().gen_range(0, GRID_COUNT);
-                let x = rand::thread_rng().gen_range(0, GRID_COUNT);
-                let direction = if rand::thread_rng().gen_range(0, 2) == 0 {
-                    Direction::HORIZONTAL
-                } else {
-                    Direction::VERTICAL
-                };
-
-                let result = self.board.place_ship(y, x, ship.length, direction);
-                match result {
-                    Ok(_) => {
-                        self.placed_ships.push(PlacedShip {
-                            ship: &ship,
-                            y,
-                            x,
-                            hits: 0,
-                        });
-                        break;
-                    }
-                    Err(e) => {
-                        continue;
-                    }
-                }
-            }
+            self.place_ship_random(&SHIPS[i]);
         }
 
         println!("your current field: ");
@@ -145,6 +120,34 @@ impl User {
         }
 
         return position;
+    }
+
+    pub fn place_ship_random(&mut self, ship: &'static Ship) {
+        loop {
+            let y = rand::thread_rng().gen_range(0, GRID_COUNT);
+            let x = rand::thread_rng().gen_range(0, GRID_COUNT);
+            let direction = if rand::thread_rng().gen_range(0, 2) == 0 {
+                Direction::HORIZONTAL
+            } else {
+                Direction::VERTICAL
+            };
+
+            let result = self.board.place_ship(y, x, ship.length, direction);
+            match result {
+                Ok(_) => {
+                    self.placed_ships.push(PlacedShip {
+                        ship: &ship,
+                        y,
+                        x,
+                        hits: 0,
+                    });
+                    break;
+                }
+                Err(e) => {
+                    continue;
+                }
+            }
+        }
     }
 
     pub fn place_ship(&mut self, ship: &'static Ship) {
@@ -200,23 +203,52 @@ impl User {
     pub fn shoot(&mut self, y: usize, x: usize) -> Result<(), Box<dyn Error>> {
         if y >= self.board.fields.len() || x >= self.board.fields[y].len() {
             return Err(Box::from("out of field bounds"));
-        }
-
-        if self.board.fields[y][x] == FieldStatus::HIT {
-            println!("already hit");
+        } else if self.board.fields[y][x] == FieldStatus::HIT || self.board.fields[y][x] == FieldStatus::FAIL {
+            println!("You already shot at this position? (y = {}, x = {})", y, x);
             return Err(Box::from("You already shot at this position?"));
-        }
-
-        if self.board.fields[y][x] == FieldStatus::EMPTY {
-            println!("Awwww nothing...");
+        } else if self.board.fields[y][x] == FieldStatus::EMPTY {
+            println!("Awwww nothing... (y = {}, x = {})", y, x);
             self.board.fields[y][x] = FieldStatus::FAIL;
+        } else if self.board.fields[y][x] == FieldStatus::SHIP {
+            println!("You have hit a ship! (y = {}, x = {})", y, x);
+            self.board.fields[y][x] = FieldStatus::HIT;
+        } else {
+            println!("dafuq");
         }
 
-        if self.board.fields[y][x] == FieldStatus::SHIP {
-            println!("You have hit a ship!");
-            self.board.fields[y][x] = FieldStatus::HIT;
-        }
+        self.calculateLost();
 
         return Ok(());
+    }
+
+    pub fn shoot_random(&mut self) {
+        loop {
+            let y = rand::thread_rng().gen_range(0, GRID_COUNT);
+            let x = rand::thread_rng().gen_range(0, GRID_COUNT);
+
+            let result = self.shoot(y, x);
+            match result {
+                Ok(_) => {
+                    break;
+                }
+                Err(e) => {
+                    continue;
+                }
+            }
+        }
+
+        self.calculateLost();
+    }
+
+    pub fn calculateLost(&mut self) {
+        for y in 0..self.board.fields.len() {
+            for x in 0..self.board.fields[y].len() {
+                if self.board.fields[y][x] == FieldStatus::SHIP {
+                    return;
+                }
+            }
+        }
+
+        self.lost = true;
     }
 }

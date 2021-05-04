@@ -1,5 +1,5 @@
-use crate::user::User;
-use std::io;
+use crate::{structures::UserType, user::User};
+use std::{any::Any, io};
 
 pub struct Game {
     users: Vec<User>,
@@ -16,7 +16,11 @@ impl Game {
             println!("Welcome to the RUST-BATTLESHIP game. Before we start, please introduce yourself:\n");
             println!("----------------------- User {} -----------------------", i + 1);
             let mut user = User::new();
-            user.place_ships_random();
+            if user.user_type == UserType::USER {
+                user.place_ships();
+            } else {
+                user.place_ships_random();
+            }
             game.users.push(user);
         }
 
@@ -36,7 +40,7 @@ impl Game {
         let mut active_ui = 0;
         let mut target_ui = 1;
 
-        while !self.users[active_ui].lost {
+        loop {
             self.print_header();
             println!("Active User: {}", self.users[active_ui].name);
             self.users[active_ui].board.log_board(true);
@@ -47,17 +51,26 @@ impl Game {
 
             println!("Shoot!");
 
-            loop {
-                let position = self.users[active_ui].get_x_y_position();
-                let mut shootResult = self.users[target_ui].shoot(position[0], position[1]);
-                match shootResult {
-                    Ok(_) => {
-                        break;
-                    }
-                    Err(e) => {
-                        println!("    ->  {} - Try again!\n\n", e);
+            if (self.users[active_ui].user_type == UserType::USER) {
+                loop {
+                    let position = self.users[active_ui].get_x_y_position();
+                    let mut shootResult = self.users[target_ui].shoot(position[0], position[1]);
+                    match shootResult {
+                        Ok(_) => {
+                            break;
+                        }
+                        Err(e) => {
+                            println!("    ->  {} - Try again!\n\n", e);
+                        }
                     }
                 }
+            } else {
+                self.users[target_ui].shoot_random();
+            }
+
+            if self.users[target_ui].lost {
+                println!("{} WON! JEEEHAAA 🥳", self.users[active_ui].name);
+                break;
             }
 
             println!("Press any key to continue!");
@@ -66,13 +79,13 @@ impl Game {
                 .read_line(&mut pressedKey)
                 .expect("Failed to readline");
 
+            if self.users[target_ui].lost {
+                break;
+            }
+
             active_ui = if active_ui == 0 { 1 } else { 0 };
             target_ui = if active_ui == 0 { 1 } else { 0 };
         }
-    }
-
-    pub fn has_lost() -> bool {
-        return false;
     }
 }
 

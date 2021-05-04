@@ -9,5 +9,3 @@ pub const SHIPS: [Ship; 5] = [
     Ship { name: "Submarine", length: 3 },
     Ship { name: "Destroyer", length: 2 },
 ];
-
-pub const SHIP_COUNT: usize = 5;

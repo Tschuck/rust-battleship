@@ -1,10 +1,8 @@
-use std::fmt;
 use std::error::Error;
 
 use crate::config::{GRID_COUNT};
 use crate::structures::{Direction, FieldStatus};
 
-#[derive(Debug)]
 pub struct Board {
     /// field of the user
     /// 0 => nothing set

@@ -3,12 +3,13 @@ pub enum Direction {
     VERTICAL,
 }
 
+#[derive(PartialEq)]
 pub enum UserType {
     BOT,
     USER,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum FieldStatus {
     EMPTY,
     FAIL,
@@ -16,15 +17,11 @@ pub enum FieldStatus {
     SHIP,
 }
 
-// TODO: Is their another approach for specifying the ship name lifetime?
-#[derive(Debug)]
 pub struct Ship {
     pub length: usize,
     pub name: &'static str,
 }
 
-// TODO: How can i reference the ship? Or is this correct?
-#[derive(Debug)]
 pub struct PlacedShip {
     pub ship: &'static Ship,
     pub x: usize,
